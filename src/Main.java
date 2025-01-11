@@ -1,5 +1,4 @@
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -7,9 +6,8 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Scanner;
 
-// Clase principal
 public class Main {
-    private static final String API_URL = "https://v6.exchangerate-api.com/v6/68f2f72ba7261ffffe8d12b7/latest/USD"; // Cambiar a la URL correcta de la API
+    private static final String API_URL = "https://v6.exchangerate-api.com/v6/68f2f72ba7261ffffe8d12b7/latest/USD"; // URL de la API
 
     public static void main(String[] args) {
         System.out.println("Sea bienvenido/a al Conversor de Moneda");
@@ -17,14 +15,14 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         while (continuar) {
-            System.out.println("\n1) Dolar a Peso argentino");
-            System.out.println("2) Peso argentino a Dolar");
-            System.out.println("3) Dolar a Real brasileño");
-            System.out.println("4) Real brasileño a Dolar");
-            System.out.println("5) Dolar a Peso colombiano");
-            System.out.println("6) Peso colombiano a Dolar");
+            System.out.println("\n1) Dólar a Peso argentino");
+            System.out.println("2) Peso argentino a Dólar");
+            System.out.println("3) Dólar a Real brasileño");
+            System.out.println("4) Real brasileño a Dólar");
+            System.out.println("5) Dólar a Peso colombiano");
+            System.out.println("6) Peso colombiano a Dólar");
             System.out.println("7) Salir");
-            System.out.print("Elija una opcion valida: ");
+            System.out.print("Elija una opción válida: ");
 
             int opcion = scanner.nextInt();
 
@@ -61,10 +59,16 @@ public class Main {
 
     private static void convertirMoneda(String fromCurrency, String toCurrency) {
         try {
+            // Obtener el JSON de la API
             String jsonResponse = getApiResponse(API_URL);
-            ExchangeRateResponse exchangeRateResponse = parseJsonResponse(jsonResponse);
 
-            Map<String, Double> tasas = exchangeRateResponse.getTasasDeConversion();
+            // Guardar el JSON en un archivo utilizando GeneradorDeArchivos
+            GeneradorDeArchivos.guardarJsonEnArchivo("tasas_de_conversion.json", jsonResponse);
+
+            // Parsear el JSON y trabajar con las tasas de conversión
+            Moneda moneda = parseJsonResponse(jsonResponse);
+            Map<String, Double> tasas = moneda.conversion_rates();
+
             if (tasas.containsKey(fromCurrency) && tasas.containsKey(toCurrency)) {
                 double tasaDeCambio = tasas.get(toCurrency) / tasas.get(fromCurrency);
                 System.out.printf("La tasa de cambio de %s a %s es: %.2f\n", fromCurrency, toCurrency, tasaDeCambio);
@@ -104,8 +108,10 @@ public class Main {
         return response.toString();
     }
 
-    private static ExchangeRateResponse parseJsonResponse(String jsonResponse) {
+    private static Moneda parseJsonResponse(String jsonResponse) {
         Gson gson = new Gson();
-        return gson.fromJson(jsonResponse, ExchangeRateResponse.class);
+        return gson.fromJson(jsonResponse, Moneda.class);
     }
 }
+
+
